@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mariana Project — Tu clóset ya tiene la respuesta</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --lav:#8b6df0; --lav2:#b9a7ff; --peach:#ff9e7d; --mint:#2bb98a; --gold:#e0a800;
+    --ink:#2a2342; --muted:#6b6385; --paper:#faf7ff; --card:#ffffff;
+    --shadow:0 14px 40px rgba(80,50,160,.16);
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--paper);line-height:1.5;-webkit-font-smoothing:antialiased}
+
+  /* progress bar */
+  #progress{position:fixed;top:0;left:0;height:5px;width:0;background:linear-gradient(90deg,var(--lav),var(--peach));z-index:100;transition:width .15s ease}
+  /* nav dots */
+  #dots{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:90;display:flex;flex-direction:column;gap:11px}
+  #dots a{width:11px;height:11px;border-radius:50%;background:rgba(139,109,240,.25);transition:all .25s}
+  #dots a.active{background:var(--lav);transform:scale(1.35)}
+  @media(max-width:600px){#dots{display:none}}
+
+  .snap{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  .scene{min-height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:64px 22px;position:relative;overflow:hidden}
+  .inner{max-width:760px;width:100%;position:relative;z-index:2}
+
+  /* scene gradients */
+  .s0{background:radial-gradient(120% 120% at 50% 0%, #efe7ff 0%, #faf7ff 60%)}
+  .s1{background:linear-gradient(160deg,#fff3ec,#fbeeff)}
+  .s2{background:linear-gradient(160deg,#eef4ff,#f6efff)}
+  .s3{background:linear-gradient(160deg,#fff9e9,#fdeef6)}
+  .s4{background:linear-gradient(160deg,#e9fbf2,#eef4ff)}
+  .s5{background:linear-gradient(160deg,#f3edff,#fff1f6)}
+  .s6{background:linear-gradient(160deg,#eef4ff,#f9f0ff)}
+  .s7{background:linear-gradient(160deg,#fff6e9,#eafaf3)}
+  .somni{background:linear-gradient(160deg,#eaf0ff,#fdeefb)}
+  .s8{background:linear-gradient(160deg,#efe7ff,#ffeef6)}
+
+  .kicker{font-size:.78rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--lav);margin-bottom:14px}
+  h1{font-size:clamp(2.1rem,6vw,3.8rem);line-height:1.05;font-weight:800;letter-spacing:-.02em}
+  h2{font-size:clamp(1.7rem,4.6vw,2.7rem);line-height:1.1;font-weight:800;letter-spacing:-.01em}
+  .lead{font-size:clamp(1.05rem,2.4vw,1.4rem);color:var(--muted);margin-top:16px}
+  .big{font-size:clamp(1.5rem,4vw,2.3rem);font-weight:800}
+  .small{font-size:.85rem;color:var(--muted)}
+  .mt{margin-top:22px}.mt2{margin-top:34px}
+  .grad{background:linear-gradient(90deg,var(--lav),var(--peach));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  .btn{display:inline-block;border:none;cursor:pointer;font:inherit;font-weight:700;color:#fff;background:linear-gradient(90deg,var(--lav),#a78bff);padding:14px 26px;border-radius:999px;box-shadow:var(--shadow);transition:transform .15s, box-shadow .15s}
+  .btn:hover{transform:translateY(-2px) scale(1.02)}
+  .btn.alt{background:#fff;color:var(--lav);border:2px solid var(--lav2)}
+
+  .scrollhint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:.85rem;animation:bob 1.6s ease-in-out infinite;z-index:3}
+  @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .6s ease, transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  .d1{transition-delay:.12s}.d2{transition-delay:.24s}.d3{transition-delay:.36s}.d4{transition-delay:.48s}.d5{transition-delay:.6s}
+
+  /* emotion chips */
+  .chips{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:26px}
+  .chip{background:var(--card);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow);font-weight:600;font-size:1rem;display:flex;gap:10px;align-items:center}
+  .chip .e{font-size:1.5rem}
+
+  /* floating clothes bg */
+  .float{position:absolute;font-size:2.2rem;opacity:.16;animation:floaty 9s ease-in-out infinite;z-index:1}
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-26px) rotate(8deg)}}
+
+  /* guess buttons */
+  .guess{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:22px}
+  .guess button{width:50px;height:50px;border-radius:14px;border:2px solid var(--lav2);background:#fff;color:var(--lav);font-weight:800;font-size:1.1rem;cursor:pointer;transition:all .15s}
+  .guess button:hover{background:var(--lav);color:#fff;transform:translateY(-3px)}
+  .people{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:22px auto 0;max-width:420px}
+  .person{font-size:2rem;filter:grayscale(1);opacity:.45;transition:all .5s}
+  .person.good{filter:none;opacity:1;transform:scale(1.18)}
+  .reveal-stat{display:none}
+  .reveal-stat.show{display:block;animation:pop .5s ease}
+  @keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+
+  /* voices */
+  .voices{display:flex;flex-direction:column;gap:12px;align-items:center;margin-top:20px}
+  .voice{background:#fff;border-radius:18px;padding:13px 20px;box-shadow:var(--shadow);font-style:italic;color:var(--ink);max-width:480px}
+  .insight{margin-top:30px;font-size:clamp(1.3rem,3.6vw,2rem);font-weight:800}
+
+  /* market quadrant mini */
+  .quad{position:relative;width:min(330px,82vw);aspect-ratio:1;margin:24px auto 0;border:2px solid var(--lav2);border-radius:16px;background:linear-gradient(135deg,rgba(139,109,240,.05),rgba(43,185,138,.08))}
+  .quad .star{position:absolute;top:12%;right:8%;font-size:2.4rem;filter:drop-shadow(0 0 10px var(--mint))}
+  .quad .lbl{position:absolute;font-size:.7rem;color:var(--muted);font-weight:700}
+  .quad .axisx{left:50%;top:0;height:100%;width:1px;background:rgba(0,0,0,.1)}
+  .quad .axisy{top:50%;left:0;width:100%;height:1px;background:rgba(0,0,0,.1)}
+  .dotc{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--lav)}
+  .qpoint{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.66rem;font-weight:800;color:var(--ink);width:86px;text-align:center;line-height:1.15}
+  .qpoint .qd{width:13px;height:13px;border-radius:50%;box-shadow:var(--shadow)}
+  .market{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;text-align:left}
+  @media(max-width:560px){.market{grid-template-columns:1fr}}
+  .mcard{background:#fff;border-radius:14px;padding:12px 15px;box-shadow:var(--shadow)}
+  .mcard b{font-size:.95rem}
+  .mcard small{display:block;color:var(--lav);font-weight:800;font-size:.8rem;margin:3px 0}
+  .mcard em{font-size:.8rem;color:var(--muted);font-style:normal}
+  .mcard.gap{margin-top:10px;border:2px solid var(--mint);background:rgba(43,185,138,.08);text-align:center}
+  .mcard.gap small{color:var(--mint)}
+  .waves{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}
+  .wave{background:#fff;border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);font-weight:600;font-size:.92rem}
+  .wave b{color:var(--mint)}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:24px}
+  .step{background:#fff;border-radius:16px;padding:16px;box-shadow:var(--shadow);text-align:left}
+  .step.star{border:2px solid var(--lav);position:relative}
+  .step .e{font-size:1.8rem}
+  .step h3{font-size:1rem;margin:8px 0 4px}
+  .step p{font-size:.84rem;color:var(--muted)}
+
+  /* closet */
+  .closet{margin-top:22px}
+  .outfits{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}
+  .outfit{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);font-size:1.7rem;opacity:0;transform:scale(.8) translateY(10px);transition:all .4s}
+  .outfit.show{opacity:1;transform:none}
+  .outfit small{display:block;font-size:.7rem;color:var(--muted);margin-top:4px}
+
+  /* week planner */
+  .week{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .day{background:#fff;border-radius:14px;padding:12px;box-shadow:var(--shadow);min-width:84px;opacity:0;transform:translateY(14px);transition:all .4s}
+  .day.show{opacity:1;transform:none}
+  .day .dn{font-size:.7rem;font-weight:800;color:var(--lav);letter-spacing:.05em}
+  .day .em{font-size:1.6rem;margin:6px 0}
+  .day small{font-size:.68rem;color:var(--muted)}
+
+  /* compare */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px;text-align:left}
+  @media(max-width:560px){.compare{grid-template-columns:1fr}}
+  .col{background:#fff;border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+  .col.bad{border:2px solid #ffd0c2}.col.good{border:2px solid #b7ecd6}
+  .col h3{font-size:1rem;margin-bottom:10px}
+  .col li{list-style:none;font-size:.88rem;color:var(--muted);margin-bottom:7px;padding-left:22px;position:relative}
+  .col.bad li::before{content:"✕";position:absolute;left:0;color:var(--peach);font-weight:800}
+  .col.good li::before{content:"✓";position:absolute;left:0;color:var(--mint);font-weight:800}
+  .anchor{margin-top:26px;font-size:clamp(1.2rem,3.2vw,1.7rem);font-weight:800}
+
+  /* business flow */
+  .flow{display:flex;gap:10px;align-items:stretch;justify-content:center;flex-wrap:wrap;margin-top:24px}
+  .fcard{background:#fff;border-radius:16px;padding:16px;box-shadow:var(--shadow);max-width:200px;text-align:left}
+  .fcard .e{font-size:1.7rem}
+  .fcard h3{font-size:.95rem;margin:6px 0 4px}.fcard p{font-size:.82rem;color:var(--muted)}
+  .farrow{display:flex;align-items:center;font-size:1.6rem;color:var(--lav)}
+  .brands{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:12px}
+  .brands span{background:#fff;border-radius:10px;padding:8px 14px;box-shadow:var(--shadow);font-weight:800;font-size:.9rem;color:var(--ink)}
+  .grow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+  .grow div{background:#fff;border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);font-weight:600;font-size:.9rem}
+
+  /* credits */
+  .credits{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:24px}
+  .credit{background:#fff;border-radius:16px;padding:14px 18px;box-shadow:var(--shadow);font-weight:700}
+  .credit small{display:block;font-weight:500;color:var(--muted);font-size:.78rem;margin-top:2px}
+
+  /* confetti */
+  .confetti{position:fixed;top:-12px;width:10px;height:14px;z-index:200;pointer-events:none;border-radius:2px}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="dots"></div>
+
+<div class="snap" id="snap">
+
+  <!-- 0 PORTADA -->
+  <section class="scene s0" id="sc0">
+    <span class="float" style="left:10%;top:20%">👗</span>
+    <span class="float" style="right:12%;top:28%;animation-delay:1s">👕</span>
+    <span class="float" style="left:16%;bottom:18%;animation-delay:2s">👟</span>
+    <span class="float" style="right:18%;bottom:22%;animation-delay:1.5s">🧥</span>
+    <div class="inner">
+      <div class="kicker reveal">Mariana Project</div>
+      <h1 class="reveal d1">Tu clóset ya tiene<br>la <span class="grad">respuesta</span>.</h1>
+      <p class="lead reveal d2">La historia de una app… digo, una <b>página web</b> 😉 que te enseña a vestirte con la ropa que ya tienes.</p>
+      <p class="small reveal d3 mt">🎯 Nuestro objetivo: que vestirse bien deje de ser un problema de dinero, y se vuelva un problema resuelto de conocimiento.</p>
+      <div class="reveal d4 mt2"><button class="btn" onclick="go(1)">Empezar la historia ↓</button></div>
+      <p class="small reveal d5 mt">Por Mariana, 13 años. 💜</p>
+    </div>
+    <div class="scrollhint">↓ desliza</div>
+  </section>
+
+  <!-- 1 LA MAÑANA -->
+  <section class="scene s1" id="sc1">
+    <div class="inner">
+      <div class="kicker reveal">Escena 1 · 7:00 a.m.</div>
+      <h2 class="reveal d1">Tengo el clóset lleno…<br>y siento que <span class="grad">no tengo nada que ponerme.</span></h2>
+      <div class="chips">
+        <div class="chip reveal d1"><span class="e">😩</span> Me estreso</div>
+        <div class="chip reveal d2"><span class="e">⏰</span> Se me hace tarde</div>
+        <div class="chip reveal d3"><span class="e">🥱</span> Me aburre mi ropa</div>
+        <div class="chip reveal d4"><span class="e">🙈</span> ¿Esto combina?</div>
+      </div>
+      <p class="big reveal d5 mt2">Y esto me pasa <span class="grad">todos los días.</span></p>
+    </div>
+  </section>
+
+  <!-- 2 NO ES SOLO YO -->
+  <section class="scene s2" id="sc2">
+    <div class="inner">
+      <div class="kicker reveal">Escena 2 · El estudio</div>
+      <h2 class="reveal d1">Así que salimos a la calle a <span class="grad">observar.</span></h2>
+      <p class="lead reveal d2" id="guessQ">¿Cuántas de cada 10 personas crees que visten <b>realmente bien</b>?</p>
+      <div class="guess reveal d3" id="guessRow">
+        <!-- buttons injected -->
+      </div>
+      <div class="reveal-stat" id="statBox">
+        <div class="people" id="people"></div>
+        <p class="big mt">Solo <span class="grad">2 de cada 10.</span> 😮</p>
+        <p class="lead mt" id="guessFeedback"></p>
+        <p class="lead">Y <b>NO</b> es porque las otras 8 no tengan ropa ni dinero…</p>
+        <p class="small mt">Estudio observacional propio — nuestra calle, nuestros ojos. 👀</p>
+        <div class="mt2"><button class="btn" onclick="go(3)">¿Entonces por qué? →</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 POR QUE -->
+  <section class="scene s3" id="sc3">
+    <div class="inner">
+      <div class="kicker reveal">Escena 3 · El porqué</div>
+      <h2 class="reveal d1">Hay miles de tiendas. Miles de videos.<br>Y aun así, <span class="grad">la gente no sabe.</span></h2>
+      <div class="voices">
+        <div class="voice reveal d1">🗣️ "Tengo ropa, pero no sé combinarla."</div>
+        <div class="voice reveal d2">🗣️ "Siempre termino con lo mismo."</div>
+        <div class="voice reveal d3">🗣️ "No sé qué me queda bien."</div>
+      </div>
+      <p class="insight reveal d4">El problema no es de <s>dinero</s> ni de <s>tiendas</s>.<br>Es de <span class="grad">CONOCIMIENTO.</span></p>
+    </div>
+  </section>
+
+  <!-- 4 OCEANO AZUL -->
+  <section class="scene s4" id="sc4">
+    <div class="inner">
+      <div class="kicker reveal">Escena 4 · La oportunidad</div>
+      <h2 class="reveal d1">Hay apps que <b>organizan</b> tu ropa…<br>y apps que te <b>venden</b> más ropa.</h2>
+      <p class="lead reveal d2">Pero casi <b>ninguna te ENSEÑA.</b> Ese es el hueco. Nuestro <span class="grad">océano azul</span> 🌊</p>
+      <div class="quad reveal d3">
+        <span class="lbl" style="top:6px;left:50%;transform:translateX(-50%)">↑ usa lo que ya tienes</span>
+        <span class="lbl" style="bottom:6px;left:50%;transform:translateX(-50%)">↓ te empuja a comprar</span>
+        <span class="lbl" style="right:6px;top:50%;transform:translateY(-50%) rotate(0)">enseña →</span>
+        <span class="lbl" style="left:6px;top:50%;transform:translateY(-50%)">← solo organiza</span>
+        <div class="qpoint" style="top:22%;left:24%"><span class="qd" style="background:var(--lav)"></span>👚 Organizan</div>
+        <div class="qpoint" style="top:15%;left:43%"><span class="qd" style="background:var(--mint)"></span>♻️ Reventa</div>
+        <div class="qpoint" style="top:74%;left:24%"><span class="qd" style="background:var(--peach)"></span>🪞 Probador virtual</div>
+        <div class="qpoint" style="top:83%;left:45%"><span class="qd" style="background:var(--gold)"></span>🛍️ Venden nuevo</div>
+        <div class="qpoint" style="top:25%;left:77%"><span style="font-size:1.7rem;filter:drop-shadow(0 0 8px var(--mint))">⭐</span><b style="color:var(--mint)">Nosotros</b></div>
+      </div>
+      <p class="small reveal d3" style="margin-top:12px"><b>El cuadrante de arriba a la derecha</b> (enseñar + usar lo que ya tienes) está <b>casi vacío</b>. Ahí estamos nosotros. ⭐</p>
+      <div class="market reveal d4">
+        <div class="mcard">👚 <b>Organizan tu ropa</b><small>Whering · Acloset · Stylebook</small><em>Guardan y combinan lo que tienes… pero no enseñan.</em></div>
+        <div class="mcard">♻️ <b>Reventa</b><small>ThredUp · Vinted · Depop</small><em>Vender y comprar ropa usada.</em></div>
+        <div class="mcard">🪞 <b>Probador virtual</b><small>Google · Amazon</small><em>Verte con la ropa puesta… pero caros y poco confiables (deforman la ropa).</em></div>
+        <div class="mcard">🛍️ <b>Te venden ropa nueva</b><small>Stitch Fix · Alta · Style DNA</small><em>Te recomiendan COMPRAR más.</em></div>
+      </div>
+      <div class="waves">
+        <div class="wave reveal d2">♻️ usar lo que ya tienes está <b>de moda</b></div>
+        <div class="wave reveal d3">📈 la reventa creció <b>+14%</b></div>
+        <div class="wave reveal d4">🎨 pagan <b>$245–$545</b> por aprender qué les queda</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 SOLUCION -->
+  <section class="scene s5" id="sc5">
+    <div class="inner">
+      <div class="kicker reveal">Escena 5 · La solución</div>
+      <h2 class="reveal d1">Una página web que es como tu <span class="grad">amiga experta en ropa.</span></h2>
+      <div class="steps">
+        <div class="step reveal d1"><div class="e">📸</div><h3>1. Guarda tu ropa</h3><p>Le tomas fotos a lo que ya tienes.</p></div>
+        <div class="step reveal d2"><div class="e">✨</div><h3>2. Te combina</h3><p>Outfits nuevos → nunca repites.</p></div>
+        <div class="step reveal d3"><div class="e">🎓</div><h3>3. Te enseña</h3><p>El porqué: color, qué te queda.</p></div>
+        <div class="step star reveal d4"><div class="e">📅</div><h3>4. ¿Qué me pongo mañana? ⭐</h3><p>Como las apps de comida, pero con ropa.</p></div>
+        <div class="step reveal d5"><div class="e">🛍️</div><h3>5. Y si te falta algo</h3><p>Te dice qué y dónde conseguirlo.</p></div>
+      </div>
+
+      <div class="closet">
+        <button class="btn alt" id="closetBtn" onclick="openCloset()">👗 Abre el clóset</button>
+        <div class="outfits" id="outfits">
+          <div class="outfit">👚👖<small>casual</small></div>
+          <div class="outfit">👗👟<small>salida</small></div>
+          <div class="outfit">🧥👖<small>lluvia</small></div>
+          <div class="outfit">👔👞<small>elegante</small></div>
+        </div>
+      </div>
+
+      <div class="mt2">
+        <button class="btn" id="weekBtn" onclick="planWeek()">📅 Planéame la semana</button>
+        <div class="week" id="week">
+          <div class="day"><div class="dn">LUN</div><div class="em">👕👖</div><small>colegio ☀️</small></div>
+          <div class="day"><div class="dn">MAR</div><div class="em">👗👟</div><small>salida 😎</small></div>
+          <div class="day"><div class="dn">MIÉ</div><div class="em">🧥👖</div><small>lluvia 🌧️</small></div>
+          <div class="day"><div class="dn">JUE</div><div class="em">✨🛍️</div><small>¡fiesta! 🎉</small></div>
+          <div class="day"><div class="dn">VIE</div><div class="em">👚👖</div><small>relax 🛋️</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 CHATGPT -->
+  <section class="scene s6" id="sc6">
+    <div class="inner">
+      <div class="kicker reveal">Escena 6 · La gran pregunta</div>
+      <h2 class="reveal d1">"¿Y ChatGPT no lo hace ya?" 🤔</h2>
+      <p class="lead reveal d2">Buena pregunta. Pero ChatGPT <b>se olvida</b> de tu ropa cada vez. Nosotros la <b>recordamos.</b></p>
+      <div class="compare">
+        <div class="col bad reveal d2">
+          <h3>📱 ChatGPT suelto</h3>
+          <li>Se olvida de tu ropa</li>
+          <li>Tú tienes que preguntar</li>
+          <li>No te enseña</li>
+          <li>No sabe dónde comprar</li>
+          <p class="small mt">Un genio… con amnesia 🧠💨</p>
+        </div>
+        <div class="col good reveal d3">
+          <h3>⭐ Nuestra página</h3>
+          <li>Recuerda tu clóset</li>
+          <li>Es proactiva (outfit del día)</li>
+          <li>Te enseña y mejoras</li>
+          <li>Sabe dónde conseguir lo que falta</li>
+        </div>
+      </div>
+      <p class="anchor reveal d4">La AI es el motor 🔧. Nosotros construimos el <span class="grad">auto</span> 🚗.</p>
+    </div>
+  </section>
+
+  <!-- 7 NEGOCIO -->
+  <section class="scene s7" id="sc7">
+    <div class="inner">
+      <div class="kicker reveal">Escena 7 · El negocio</div>
+      <h2 class="reveal d1">Ganamos cuando te <span class="grad">ayudamos</span>, no cuando te presionamos.</h2>
+      <div class="flow">
+        <div class="fcard reveal d1"><div class="e">♻️🎓</div><h3>1. Puerta (gratis)</h3><p>Te enamora: outfits de tu clóset + te enseña.</p></div>
+        <div class="farrow reveal d2">→</div>
+        <div class="fcard reveal d2"><div class="e">💙</div><h3>2. Confianza</h3><p>La usas a diario. Te ayudó sin venderte.</p></div>
+        <div class="farrow reveal d3">→</div>
+        <div class="fcard reveal d3"><div class="e">🤝🛍️</div><h3>3. Comisión</h3><p>Cuando de verdad te falta algo → te creen.</p></div>
+      </div>
+      <p class="small reveal d3 mt2">Vía redes de afiliados nos conectamos con marcas que ya conoces:</p>
+      <div class="brands reveal d4">
+        <span>Zara</span><span>H&amp;M</span><span>Nike</span><span>Adidas</span><span>Levi's</span><span>Uniqlo</span><span>Lululemon</span><span>Mango</span>
+      </div>
+      <div class="grow">
+        <div class="reveal d3">📲 PWA → <b>una web que vive en tu bolsillo</b>, global</div>
+        <div class="reveal d4">📤 Cada resultado se comparte → más gente, <b>gratis</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7B OMNIPRESENCIA -->
+  <section class="scene somni" id="scOmni">
+    <div class="inner">
+      <div class="kicker reveal">Escena 8 · Omnipresencia</div>
+      <h2 class="reveal d1">¿Solo una web? No.<br>Vivimos en tu <span class="grad">bolsillo</span>. 📲</h2>
+      <p class="lead reveal d2">Somos una <b>PWA</b>: una web que se instala en tu celular como app — sin descargas pesadas, y con notificaciones que te recuerdan tu outfit del día. 🌅</p>
+      <p class="small reveal d2">Un cerebro (tu clóset + la AI) → muchas puertas para llegar a todo el mundo. 🌍</p>
+      <div class="steps">
+        <div class="step reveal d2"><div class="e">🚀</div><h3>Fase 1 · PWA</h3><p>En tu pantalla de inicio + notificaciones. Global y sin fricción.</p></div>
+        <div class="step reveal d3"><div class="e">💬</div><h3>Fase 2 · Chat local</h3><p>WhatsApp · iMessage · WeChat · LINE. Donde ya pasas el día.</p></div>
+        <div class="step reveal d4"><div class="e">📱</div><h3>Fase 3 · Tiendas + extensión</h3><p>App Store/Play + aviso al comprar online.</p></div>
+        <div class="step reveal d5"><div class="e">✨</div><h3>Extra · Widget + redes</h3><p>El outfit del día en tu pantalla y filtros en TikTok/IG.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 CIERRE -->
+  <section class="scene s8" id="sc8">
+    <div class="inner">
+      <div class="kicker reveal">Escena 9 · El objetivo</div>
+      <h2 class="reveal d1">Que cualquier persona, en cualquier lugar, se vea y se sienta <span class="grad">increíble con lo que ya tiene.</span></h2>
+      <p class="lead reveal d2">Empezamos por chicos como yo. Pero esto es para <b>todos</b>. 🌍</p>
+      <p class="big reveal d3 mt2">¿Estás listo para convertirnos en el próximo <span class="grad">Baby Unicorn</span> global nacido en LATAM? 🦄</p>
+      <p class="small reveal d4 mt2" style="font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--lav)">🙏 Gracias a mi equipo</p>
+      <div class="credits">
+        <div class="credit reveal d2">🧵 Coco<small>competencia · AI</small></div>
+        <div class="credit reveal d3">💡 Ada<small>tecnología · AI</small></div>
+        <div class="credit reveal d4">📈 Smith<small>mercado · AI</small></div>
+        <div class="credit reveal d5">🎩 Claude<small>coordinación · AI</small></div>
+        <div class="credit reveal d5">👨 Papá<small>asistente</small></div>
+      </div>
+      <p class="big reveal d5 mt2">Las grandes ideas no se hacen solas. <span class="grad">✨</span></p>
+      <p class="lead reveal d5">— Mariana. ¡Gracias! 💜</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  var snap=document.getElementById('snap');
+  var scenes=document.querySelectorAll('.scene');
+  var prog=document.getElementById('progress');
+  var dotsWrap=document.getElementById('dots');
+
+  // build dots
+  scenes.forEach(function(s,i){
+    var a=document.createElement('a');a.href='#sc'+i;a.dataset.i=i;
+    a.onclick=function(e){e.preventDefault();go(i)};
+    dotsWrap.appendChild(a);
+  });
+  var dots=dotsWrap.querySelectorAll('a');
+
+  function go(i){scenes[i].scrollIntoView({behavior:'smooth'})}
+
+  // progress + active dot + reveal
+  function onScroll(){
+    var st=snap.scrollTop, h=snap.scrollHeight-snap.clientHeight;
+    prog.style.width=(h>0?(st/h*100):0)+'%';
+    var idx=Math.round(st/snap.clientHeight);
+    dots.forEach(function(d,i){d.classList.toggle('active',i===idx)});
+  }
+  snap.addEventListener('scroll',onScroll);onScroll();
+
+  // reveal on enter
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        en.target.querySelectorAll('.reveal').forEach(function(r){r.classList.add('in')});
+        if(en.target.id==='sc8'){launchConfetti()}
+      }
+    });
+  },{root:snap,threshold:.35});
+  scenes.forEach(function(s){io.observe(s)});
+
+  // scene 2 — guess
+  var gr=document.getElementById('guessRow');
+  for(var n=1;n<=10;n++){(function(n){
+    var b=document.createElement('button');b.textContent=n;
+    b.onclick=function(){revealStat(n)};gr.appendChild(b);
+  })(n)}
+  function revealStat(guess){
+    document.getElementById('guessRow').style.display='none';
+    document.getElementById('guessQ').innerHTML='Tú dijiste <b>'+guess+'</b>… la realidad:';
+    var p=document.getElementById('people');p.innerHTML='';
+    for(var i=0;i<10;i++){var s=document.createElement('span');s.className='person'+(i<2?' good':'');s.textContent='🧍';p.appendChild(s)}
+    var fb=document.getElementById('guessFeedback');
+    if(guess<=2){fb.textContent='¡Le atinaste! Eres de las que observan bien. 👏'}
+    else if(guess<=5){fb.textContent='Casi todos creen que son más… pero no. 😅'}
+    else{fb.textContent='Ojalá fueran tantas, ¿verdad? 😉'}
+    document.getElementById('statBox').classList.add('show');
+  }
+
+  // scene 5 — closet & week
+  function openCloset(){
+    var o=document.querySelectorAll('#outfits .outfit');
+    o.forEach(function(el,i){setTimeout(function(){el.classList.add('show')},i*160)});
+    document.getElementById('closetBtn').style.display='none';
+  }
+  function planWeek(){
+    var d=document.querySelectorAll('#week .day');
+    d.forEach(function(el,i){setTimeout(function(){el.classList.add('show')},i*200)});
+    document.getElementById('weekBtn').style.display='none';
+  }
+
+  // confetti
+  var confettiDone=false;
+  function launchConfetti(){
+    if(confettiDone)return;confettiDone=true;
+    var colors=['#8b6df0','#ff9e7d','#2bb98a','#e0a800','#b9a7ff'];
+    for(var i=0;i<90;i++){(function(i){
+      var c=document.createElement('div');c.className='confetti';
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=colors[i%colors.length];
+      c.style.transform='rotate('+(Math.random()*360)+'deg)';
+      document.body.appendChild(c);
+      var dur=2200+Math.random()*1800, delay=Math.random()*600;
+      c.animate([{top:'-20px',opacity:1},{top:'100vh',opacity:.9}],{duration:dur,delay:delay,easing:'ease-in'});
+      setTimeout(function(){c.remove()},dur+delay+100);
+    })(i)}
+  }
+
+  // keyboard arrows
+  document.addEventListener('keydown',function(e){
+    var idx=Math.round(snap.scrollTop/snap.clientHeight);
+    if(e.key==='ArrowDown'||e.key==='PageDown'){e.preventDefault();go(Math.min(idx+1,scenes.length-1))}
+    if(e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();go(Math.max(idx-1,0))}
+  });
+</script>
+</body>
+</html>
