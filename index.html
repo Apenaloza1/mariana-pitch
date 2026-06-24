@@ -107,6 +107,8 @@
 
   /* steps */
   .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:24px}
+  .steps.five{grid-template-columns:repeat(5,1fr)}
+  @media(max-width:760px){.steps.five{grid-template-columns:1fr 1fr}}
   .step{background:#fff;border-radius:16px;padding:16px;box-shadow:var(--shadow);text-align:left}
   .step.star{border:2px solid var(--lav);position:relative}
   .step .e{font-size:1.8rem}
@@ -269,7 +271,7 @@
     <div class="inner">
       <div class="kicker reveal">Escena 5 · La solución</div>
       <h2 class="reveal d1">Una página web que es como tu <span class="grad">amiga experta en ropa.</span></h2>
-      <div class="steps">
+      <div class="steps five">
         <div class="step reveal d1"><div class="e">📸</div><h3>1. Guarda tu ropa</h3><p>Le tomas fotos a lo que ya tienes.</p></div>
         <div class="step reveal d2"><div class="e">✨</div><h3>2. Te combina</h3><p>Outfits nuevos → nunca repites.</p></div>
         <div class="step reveal d3"><div class="e">🎓</div><h3>3. Te enseña</h3><p>El porqué: color, qué te queda.</p></div>
@@ -304,11 +306,11 @@
   <section class="scene s6" id="sc6">
     <div class="inner">
       <div class="kicker reveal">Escena 6 · La gran pregunta</div>
-      <h2 class="reveal d1">"¿Y ChatGPT no lo hace ya?" 🤔</h2>
-      <p class="lead reveal d2">Buena pregunta. Pero ChatGPT <b>se olvida</b> de tu ropa cada vez. Nosotros la <b>recordamos.</b></p>
+      <h2 class="reveal d1">"¿Y ChatGPT, Claude o Gemini no lo hacen ya?" 🤔</h2>
+      <p class="lead reveal d2">Buena pregunta. Pero ChatGPT, Claude o Gemini <b>se olvidan</b> de tu ropa cada vez. Nosotros la <b>recordamos.</b></p>
       <div class="compare">
         <div class="col bad reveal d2">
-          <h3>📱 ChatGPT suelto</h3>
+          <h3>📱 ChatGPT · Claude · Gemini</h3>
           <li>Se olvida de tu ropa</li>
           <li>Tú tienes que preguntar</li>
           <li>No te enseña</li>
